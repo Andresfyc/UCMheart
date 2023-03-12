@@ -43,7 +43,7 @@ final class ECGViewModel: ObservableObject {
     }
     
     func load() {
-        print("Load")
+        //print("Load")
         var counter = 0
         self.getECGsCount { (ecgsCount) in
             print("ECGs totales \(ecgsCount)")
@@ -52,23 +52,23 @@ final class ECGViewModel: ObservableObject {
                 return
             } else {
                 for i in 0...ecgsCount - 1 {
-                    print("Entra -------> ")
-                    self.getECGs(counter: i) { (ecgResults,ecgDate)   in
+                    //print("Entra -------> ")
+                    self.getECGs(counter: i) { (ecgResults,ecgDate, frec, ecgClassif)   in
                         DispatchQueue.main.async {
-                            print("Load -------> ")
+                            //print("Load -------> ")
                             //self.ecgSamples.append(ecgResults)
                             //self.ecgDates.append(ecgDate)
                             //self.data.append(DataModel(id: i, value: ecgResults, date: ecgDate))
-                            let newECG = ECGmodel(id: i, value: ecgResults, date: ecgDate)
+                            let newECG = ECGmodel(id: i, value: ecgResults, date: ecgDate, frec_cardiaca: frec, classification: ecgClassif)
                             self.ecg.insert(newECG, at: 0)
                             //self.ecg.append(ECGmodel(id: i, value: ecgResults, date: ecgDate))
-                            print("------------------------------------------------------")
-                            print(self.ecg[0])
+                            //print("------------------------------------------------------")
+                            //print(self.ecg[0])
                             counter += 1
                             
                             // el último hilo entrará aquí, lo que significa que todos están terminados
                             if counter == ecgsCount {
-                                
+                                // aqui se puede ordenar por fecha
                             }
                         }
                     }
@@ -78,8 +78,8 @@ final class ECGViewModel: ObservableObject {
     }
     
     
-    func getECGs(counter: Int, completion: @escaping ([(Double,Double)],Date) -> Void) {
-        print("getECGs ----- ")
+    func getECGs(counter: Int, completion: @escaping ([(Double,Double)],Date,Int,String) -> Void) {
+        //print("getECGs ----- ")
         var ecgSamples = [(Double,Double)] ()
         let predicate = HKQuery.predicateForSamples(withStart: Date.distantPast,end: Date.distantFuture,options: .strictEndDate)
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
@@ -90,6 +90,50 @@ final class ECGViewModel: ObservableObject {
             }
             //print(mostRecentSample)
             
+            print("INICIO ------------------")
+            
+            guard let ecgSamplesArray = samples as? [HKElectrocardiogram] else {
+                fatalError("Error Unable to convert  \(String(describing: samples)) to [HKElectrocardiogram]")
+            }
+            let clasificacion:String
+            let heartRateUnit:HKUnit = HKUnit(from: "count/min")
+            let frecuencia = ecgSamplesArray[counter].averageHeartRate?.doubleValue(for: heartRateUnit)
+    
+            print("ecgSampleData:\(ecgSamplesArray[counter]).")
+            print("ECG average heart rate:\(Int(frecuencia!))\n")
+                
+            
+                switch ecgSamplesArray[counter].classification.rawValue {
+                case 1:
+                    clasificacion = "Ritmo sinusal"
+                    print("ECG classification: Sinusrhythm")
+                case 2:
+                    clasificacion = "Fibrilación auricular"
+                    print("ECG classification: Atrial fibrillation")
+                case 3:
+                    clasificacion = "Frecuencia cardíaca baja"
+                    print("ECG classification: Low Heart Rate")
+                case 4:
+                    clasificacion = "Ritmo cardíaco alto"
+                    print("ECG classification:  High Heart Rate")
+                case 5:
+                    clasificacion = "Registro deficiente"
+                    print("ECG classification:   Poor Reading")
+                case 6:
+                    clasificacion = "No concluyente"
+                    print("ECG classification:  Inconclusive Other")
+                case 100:
+                    clasificacion = "No reconocido"
+                    print("ECG classification:  Unrecognized")
+                default:
+                    clasificacion = "Otra clasificación"
+                    print("ECG classification: Other classification")
+                }
+                print("Individual voltage measurements that make up an Apple watch ECG sample:")
+                
+         
+            
+            print("FIN ------------------")
             
             let query = HKElectrocardiogramQuery(samples[counter] as! HKElectrocardiogram) { (query, result) in
                 
@@ -102,9 +146,9 @@ final class ECGViewModel: ObservableObject {
                     ecgSamples.append(sample)
                     
                 case .done:
-                    //print("done")
+                    //print(samples[counter])
                     DispatchQueue.main.async {
-                        completion(ecgSamples,samples[counter].startDate)
+                        completion(ecgSamples,samples[counter].startDate, Int(frecuencia!),clasificacion)
                     }
                 }
             }

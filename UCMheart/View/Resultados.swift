@@ -63,7 +63,7 @@ struct Resultados: View {
         }
         .listStyle(SidebarListStyle())
             .onAppear() {
-                print("1")
+                //print("1")
                 //ecgViewModel.load()
             }
     }
