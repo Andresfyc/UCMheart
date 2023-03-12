@@ -8,14 +8,16 @@
 import SwiftUI
 
 struct ContentView: View {
+    //@StateObject var viewModel = ECGViewModel()
     var body: some View {
         VStack {
-            Image(systemName: "globe")
+            Image(systemName: "person.and.background.dotted")
                 .imageScale(.large)
                 .foregroundColor(.accentColor)
-            Text("Hello, world!")
+            Text("UCM")
         }
         .padding()
+    
     }
 }
 
