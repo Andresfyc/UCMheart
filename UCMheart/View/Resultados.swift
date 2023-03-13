@@ -26,46 +26,13 @@ struct Resultados: View {
                                     Text(ecg.date, style: .time)
                                 }
                             }
-                            
                         }
                         .navigationTitle("ECG's")
                     }
                 }
-                
-                //Label("grafica ECG", systemImage: "sensor.fill").font(.system(size: 20))
-                
-                //Grafica()
-                //Text(String(ecgViewModel.getAllECG().count))
-
-                /*
-                Chart {
-                    ForEach(Array(viewModel.getData(Select: 0).enumerated()), id: \.offset) { index, value in
-                        LineMark(
-                            x: .value("A", value.1),
-                            y: .value("B", value.0)
-                                )
-                        }
-                }
-                
-                 Chart { data in
-                     ForEach(Array(data.value.enumerated()), id: \.offset) { A, B in
-                     LineMark(
-                         x: .value("A", B.1),
-                         y: .value("B", B.0))
-                     }
-                 }
-                 */
-                 
-               
-                
             }
-        //x: ecgSamples[i].1, y: ecgSamples[i].0)
         }
         .listStyle(SidebarListStyle())
-            .onAppear() {
-                //print("1")
-                //ecgViewModel.load()
-            }
     }
 }
 

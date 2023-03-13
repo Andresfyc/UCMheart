@@ -8,41 +8,45 @@
 import SwiftUI
 import Charts
 
-let data = [(A: -2.967403984069824e-05, B: 0.0), (A: -5.108494567871093e-05, B: 0.001953125),
-            (A: -1.7164798736572265e-05, B: 0.00390625), (A: 7.068367767333984e-05, B: 0.005859375),
-            (A: 0.00019779476928710935, B: 0.0078125), (A: 0.00033962213134765626, B: 0.009765625) ]
+private struct ViewConstants {
+    static let color_ = Color(.red)
+        static let chartWidth: CGFloat = 350
+        static let chartHeight: CGFloat = 400
+        static let escalaData: CGFloat = 0.25
+}
 
 struct Grafica: View {
    
-    //@StateObject private var viewModel = ViewModel()
+    var ecgValue: [(A: Double,B: Double)]
     
     var body: some View {
-        Text("HOLA MUNDO")
-        
-        Chart {
-            ForEach(Array(data.enumerated()), id: \.offset) { index, value in
-                LineMark(
-                    x: .value("A", value.1),
-                    y: .value("B", value.0)
+        VStack(alignment: HorizontalAlignment.leading){
+            ScrollView(.horizontal) {
+                Chart {
+                    ForEach(Array(ecgValue.enumerated()), id: \.offset) { index, value in
+                        LineMark(
+                            x: .value("A", value.1),
+                            y: .value("B", value.0)
                         )
+                        .foregroundStyle(ViewConstants.color_)
+                    }
                 }
+                .chartYAxis(.hidden)
+                .chartYAxis() {
+                    AxisMarks(position: .automatic)
+                }
+                .frame(width: ViewConstants.escalaData * CGFloat(ecgValue.count))
+            }
+            .frame(width: ViewConstants.chartWidth,  height: ViewConstants.chartHeight)
         }
-        /*
-        Chart(viewModel.getECG()) { data in
-            ForEach(Array(data.value.enumerated()), id: \.offset) { index, value in
-                LineMark(
-                    x: .value("A", value.1),
-                    y: .value("B", value.0)
-                        )
-                }
-        }*/
-         
+        .padding(.top,10 )
+        .padding(.bottom,10)
     }
          
 }
 
 struct Grafica_Previews: PreviewProvider {
     static var previews: some View {
-        Grafica()
+        Grafica(ecgValue: [(A: 0,B: 0)])
     }
 }
