@@ -18,7 +18,6 @@ final class ECGViewModel: ObservableObject {
     
     init(){
         load()
-        ecg = getAllECG()
     }
     
     // Solicitar autorización de HealthKit para leer información de ECG.
@@ -43,32 +42,28 @@ final class ECGViewModel: ObservableObject {
     }
     
     func load() {
-        //print("Load")
+        
         var counter = 0
         self.getECGsCount { (ecgsCount) in
             print("ECGs totales \(ecgsCount)")
+            
             if ecgsCount < 1 {
                 print("No tienes ECGs disponibles")
                 return
             } else {
                 for i in 0...ecgsCount - 1 {
-                    //print("Entra -------> ")
+                    
                     self.getECGs(counter: i) { (ecgResults,ecgDate, frec, ecgClassif)   in
                         DispatchQueue.main.async {
-                            //print("Load -------> ")
-                            //self.ecgSamples.append(ecgResults)
-                            //self.ecgDates.append(ecgDate)
-                            //self.data.append(DataModel(id: i, value: ecgResults, date: ecgDate))
+                        
                             let newECG = ECGmodel(id: i, value: ecgResults, date: ecgDate, frec_cardiaca: frec, classification: ecgClassif)
                             self.ecg.insert(newECG, at: 0)
-                            //self.ecg.append(ECGmodel(id: i, value: ecgResults, date: ecgDate))
-                            //print("------------------------------------------------------")
-                            //print(self.ecg[0])
+                
                             counter += 1
                             
                             // el último hilo entrará aquí, lo que significa que todos están terminados
                             if counter == ecgsCount {
-                                // aqui se puede ordenar por fecha
+                                self.ecg.sort { $0.id < $1.id }
                             }
                         }
                     }
@@ -79,18 +74,19 @@ final class ECGViewModel: ObservableObject {
     
     
     func getECGs(counter: Int, completion: @escaping ([(Double,Double)],Date,Int,String) -> Void) {
-        //print("getECGs ----- ")
+    
         var ecgSamples = [(Double,Double)] ()
+        
         let predicate = HKQuery.predicateForSamples(withStart: Date.distantPast,end: Date.distantFuture,options: .strictEndDate)
+        
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+        
         let ecgQuery = HKSampleQuery(sampleType: HKObjectType.electrocardiogramType(), predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]){ (query, samples, error) in
             guard let samples = samples,
                   let mostRecentSample = samples.first as? HKElectrocardiogram else {
                 return
             }
-            //print(mostRecentSample)
             
-            print("INICIO ------------------")
             
             guard let ecgSamplesArray = samples as? [HKElectrocardiogram] else {
                 fatalError("Error Unable to convert  \(String(describing: samples)) to [HKElectrocardiogram]")
@@ -132,9 +128,7 @@ final class ECGViewModel: ObservableObject {
                 print("Individual voltage measurements that make up an Apple watch ECG sample:")
                 
          
-            
-            print("FIN ------------------")
-            
+                        
             let query = HKElectrocardiogramQuery(samples[counter] as! HKElectrocardiogram) { (query, result) in
                 
                 switch result {
@@ -157,8 +151,7 @@ final class ECGViewModel: ObservableObject {
         
         
         self.healthStore.execute(ecgQuery)
-        //print("everything working here")
-        //print(ecgSamples.count)
+        
     }
     
     
@@ -187,16 +180,4 @@ final class ECGViewModel: ObservableObject {
         return []
     }
     
-    /*
-    func getDate(titleForRow row: Int) -> String {
-        if self.ecg.count < row {
-            print("getDate -> \(self.ecg.count)")
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "dd/MM/yy HH:mm"
-            let fecha = dateFormatter.string(from: self.ecg[row].date)
-            return fecha
-        }
-        return "Loading..."
-    }
-    */
 }
